@@ -1,11 +1,11 @@
-import ToDoService from '../services/todo.service.js';
+import ToDoService from "../services/todo.service.js";
 
 export class ToDoController {
     static async createToDo(req: any, res: any, next: any): Promise<void> {
         try {
             const userId = req.user?._id || req.body.userId;
             const { title, description } = req.body;
-            
+
             if (!userId) {
                 res.status(400).json({ status: false, message: "User ID is required" });
                 return;
@@ -21,7 +21,7 @@ export class ToDoController {
     static async getUserToDos(req: any, res: any, next: any): Promise<void> {
         try {
             const userId = req.user?._id || req.body.userId || req.query.userId;
-            
+
             if (!userId) {
                 res.status(400).json({ status: false, message: "User ID is required" });
                 return;

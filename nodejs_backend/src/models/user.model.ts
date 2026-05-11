@@ -2,6 +2,21 @@ import connectDB from '../config/db.js';
 import { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const orderSchema = new Schema({
+    food_id: {
+        type: String,
+        required: true,
+    },
+    quanity: {
+        type: Number,
+        required: true,
+    },
+    total: {
+        type: Number,
+        required: true,
+    },
+}, { _id: false });
+
 const userSchema = new Schema({
     email: {
         type: String,
@@ -16,6 +31,10 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: [true, "password is required"],
+    },
+    orders: {
+        type: [orderSchema],
+        default: [],
     },
 }, { timestamps: true });
 
