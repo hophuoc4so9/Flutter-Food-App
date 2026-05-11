@@ -13,23 +13,54 @@ const userSchema = new Schema({
         ],
         unique: true,
     },
+
     password: {
         type: String,
         required: [true, "password is required"],
     },
+
+    otpCode: {
+        type: String,
+        default: null,
+    },
+
+    otpExpire: {
+        type: Date,
+        default: null,
+    },
+
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+
+    isPasswordResetVerified: {
+        type: Boolean,
+        default: false,
+    },
+
 }, { timestamps: true });
 
 userSchema.pre('save', async function (this: any) {
     const user = this;
+
     if (!user.isModified('password')) return;
+
     const salt = await bcrypt.genSalt(10);
+
     user.password = await bcrypt.hash(user.password, salt);
 });
 
-userSchema.methods.comparePassword = async function (this: any, candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (
+    this: any,
+    candidatePassword: string
+): Promise<boolean> {
+
     return bcrypt.compare(candidatePassword, this.password);
 };
 
 const connection = connectDB();
+
 const UserModel = connection.model('User', userSchema);
+
 export default UserModel;
