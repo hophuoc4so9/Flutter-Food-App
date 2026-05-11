@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'dashboard.dart';
 import 'registration.dart';
+import 'forgotPasswordPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'services/auth_service.dart';
 import 'config.dart';
 
 class SignInPage extends StatefulWidget {
@@ -29,23 +29,21 @@ class _SignInPageState extends State<SignInPage> {
 
   void loginUser() async {
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-      var reqBody = {
-        "email": emailController.text,
-        "password": passwordController.text
-      };
+      var result = await AuthService.loginUser(
+        email: emailController.text,
+        password: passwordController.text,
+      );
 
-      var response = await http.post(Uri.parse(login),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode(reqBody));
-
-      var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['status']) {
-        var myToken = jsonResponse['success']['token'];
+      if (result['status']) {
+        var myToken = result['token'];
         prefs.setString('token', myToken);
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => Dashboard(token: myToken)));
       } else {
-        print('Something went wrong');
+        print('Login failed: ${result['message']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${result['message']}')),
+        );
       }
     }
   }
@@ -103,18 +101,26 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                const Text(
-                  "Forgot Password?",
-                  style: TextStyle(
-                    color: Color(0xFFF57F17),
-                    fontWeight: FontWeight.bold,
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ForgotPasswordPage()));
+                  },
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      color: Color(0xFFF57F17),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: loginUser,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E0E0),
+                    backgroundColor: const Color(0xFF3F51B5),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(

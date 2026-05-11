@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/category_service.dart';
 
 class Dashboard extends StatefulWidget {
   final token;
@@ -9,6 +10,25 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  List<dynamic> categories = [];
+  bool isLoading = true;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCategories();
+  }
+
+  Future<void> fetchCategories() async {
+    var result = await CategoryService.fetchCategories();
+
+    setState(() {
+      categories = result['categories'] ?? [];
+      errorMessage = result['message'] ?? '';
+      isLoading = false;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,21 +96,25 @@ class _DashboardState extends State<Dashboard> {
           ),
           Divider(color: Colors.grey.shade300, height: 1),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              padding: EdgeInsets.all(16),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.9,
-              children: [
-                _buildCuisineCard("Chinese", "assets/chinese_food.jpg"),
-                _buildCuisineCard("South Indian", "assets/south_indian.jpg"),
-                _buildCuisineCard("Beverages", "assets/beverage.jpg"),
-                _buildCuisineCard("North India", "assets/indian-big-thali-food_1059430-62887.jpg"),
-                _buildCuisineCard("Korean", "assets/korea_food.jpg"),
-                _buildCuisineCard("Vietnamese", "assets/popular-vietnamese-foods.jpg"),
-              ],
-            ),
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : errorMessage.isNotEmpty
+                    ? Center(child: Text('Error: $errorMessage'))
+                    : categories.isEmpty
+                        ? Center(child: Text('No categories found'))
+                        : GridView.count(
+                            crossAxisCount: 2,
+                            padding: EdgeInsets.all(16),
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.9,
+                            children: categories.map((category) {
+                              return _buildCuisineCard(
+                                category['name'] ?? 'Unknown',
+                                category['image_url'] ?? 'assets/placeholder.jpg',
+                              );
+                            }).toList(),
+                          ),
           ),
         ],
       ),
