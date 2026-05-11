@@ -2,6 +2,28 @@ import connectDB from '../config/db.js';
 import { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const foodInOrderSchema = new Schema({
+    food_id: {
+        type: String,
+        required: true,
+    },
+    quantity: {
+        type: Number,
+        required: true,
+    },
+}, { _id: false });
+
+const orderSchema = new Schema({
+    food: {
+        type: [foodInOrderSchema],
+        required: true,
+    },
+    total: {
+        type: Number,
+        required: true,
+    },
+}, { _id: false });
+
 const userSchema = new Schema({
     email: {
         type: String,
@@ -39,6 +61,10 @@ const userSchema = new Schema({
         default: false,
     },
 
+    orders: {
+        type: [orderSchema],
+        default: [],
+    },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (this: any) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'food_list_page.dart';
+
+import 'models/category.dart';
+import 'services/category_service.dart';
 
 class Dashboard extends StatefulWidget {
   final token;
@@ -10,6 +12,16 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  late final CategoryService _categoryService;
+  late Future<List<Category>> _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryService = CategoryService(authToken: widget.token);
+    _categoriesFuture = _categoryService.getCategories();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +44,11 @@ class _DashboardState extends State<Dashboard> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 8.0, top: 4.0),
-                child: Icon(Icons.shopping_cart_outlined, color: Colors.black, size: 28),
+                child: Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.black,
+                  size: 28,
+                ),
               ),
               Positioned(
                 top: 8,
@@ -45,7 +61,11 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   child: Text(
                     "3",
-                    style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -77,20 +97,46 @@ class _DashboardState extends State<Dashboard> {
           ),
           Divider(color: Colors.grey.shade300, height: 1),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              padding: EdgeInsets.all(16),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.9,
-              children: [
-                _buildCuisineCard(context, "Chinese", "assets/chinese_food.jpg"),
-                _buildCuisineCard(context, "South Indian", "assets/south_indian.jpg"),
-                _buildCuisineCard(context, "Beverages", "assets/beverage.jpg"),
-                _buildCuisineCard(context, "North India", "assets/indian-big-thali-food_1059430-62887.jpg"),
-                _buildCuisineCard(context, "Korean", "assets/korea_food.jpg"),
-                _buildCuisineCard(context, "Vietnamese", "assets/popular-vietnamese-foods.jpg"),
-              ],
+            child: FutureBuilder<List<Category>>(
+              future: _categoriesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Không tải được danh mục: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+
+                final categories = snapshot.data ?? [];
+
+                if (categories.isEmpty) {
+                  return const Center(child: Text('Chưa có danh mục nào'));
+                }
+
+                return GridView.count(
+                  crossAxisCount: 2,
+                  padding: const EdgeInsets.all(16),
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.9,
+                  children: categories
+                      .map(
+                        (category) =>
+                            _buildCuisineCard(category.name, category.imageUrl),
+                      )
+                      .toList(),
+                );
+              },
             ),
           ),
         ],
@@ -98,21 +144,12 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildCuisineCard(BuildContext context, String title, String imagePath) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FoodListPage(categoryName: title, imagePath: imagePath),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
+  Widget _buildCuisineCard(String title, String imagePath) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
@@ -127,10 +164,29 @@ class _DashboardState extends State<Dashboard> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-              ),
+              child: imagePath.startsWith('http')
+                  ? Image.network(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.fastfood,
+                          size: 56,
+                          color: Colors.grey,
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.fastfood,
+                          size: 56,
+                          color: Colors.grey,
+                        );
+                      },
+                    ),
             ),
           ),
           Padding(
@@ -146,8 +202,6 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-    ),
     );
   }
 }
-
