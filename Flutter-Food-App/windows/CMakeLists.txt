@@ -1,10 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(hotuanphuoc_2224802010872_todoapp LANGUAGES CXX)
+project(Flutter_Food_App LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "hotuanphuoc_2224802010872_todoapp")
+set(BINARY_NAME "Flutter_Food_App")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

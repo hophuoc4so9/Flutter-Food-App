@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hotuanphuoc_2224802010872_todoapp"
+    namespace = "com.example.Flutter_Food_App"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.hotuanphuoc_2224802010872_todoapp"
+        applicationId = "com.example.Flutter_Food_App"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

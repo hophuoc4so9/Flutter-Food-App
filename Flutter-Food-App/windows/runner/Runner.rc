@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "hotuanphuoc_2224802010872_todoapp" "\0"
+            VALUE "FileDescription", "Flutter_Food_App" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "hotuanphuoc_2224802010872_todoapp" "\0"
+            VALUE "InternalName", "Flutter_Food_App" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "hotuanphuoc_2224802010872_todoapp.exe" "\0"
-            VALUE "ProductName", "hotuanphuoc_2224802010872_todoapp" "\0"
+            VALUE "OriginalFilename", "Flutter_Food_App.exe" "\0"
+            VALUE "ProductName", "Flutter_Food_App" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
