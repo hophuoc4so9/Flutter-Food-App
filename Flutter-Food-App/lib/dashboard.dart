@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/category_service.dart';
-
+import 'services/cart_service.dart';
+import 'screens/cart_page.dart';
+import 'food_list_page.dart';
 import 'models/category.dart';
-import 'services/category_service.dart';
+import 'widgets/custom_appbar.dart';
 
 class Dashboard extends StatefulWidget {
   final token;
@@ -14,73 +17,53 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   late final CategoryService _categoryService;
+  late CartService _cartService;
   late Future<List<Category>> _categoriesFuture;
+  int _cartItemCount = 0;
 
   @override
   void initState() {
     super.initState();
     _categoryService = CategoryService(authToken: widget.token);
     _categoriesFuture = _categoryService.getCategories();
+    _initializeCartService();
+  }
+
+  void _initializeCartService() async {
+    final prefs = await SharedPreferences.getInstance();
+    _cartService = CartService(prefs: prefs);
+    _updateCartCount();
+  }
+
+  void _updateCartCount() async {
+    final count = await _cartService.getCartItemCount();
+    setState(() => _cartItemCount = count);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        leading: Icon(Icons.menu, color: Colors.black),
-        title: Text(
-          "Restaurant App",
-          style: TextStyle(
-            color: Color(0xFFD32F2F),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0, top: 4.0),
-                child: Icon(
-                  Icons.shopping_cart_outlined,
-                  color: Colors.black,
-                  size: 28,
-                ),
+      appBar: DashboardAppBar(
+        title: "Restaurant App",
+        cartCount: _cartItemCount,
+        onCartPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CartPage(
+                token: widget.token,
+                baseUrl: 'http://localhost:3000',
               ),
-              Positioned(
-                top: 8,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    "3",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.black),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          SizedBox(width: 8),
-        ],
+            ),
+          );
+          if (result != null) {
+            _updateCartCount();
+          }
+        },
+        onLogoutPressed: () {
+          Navigator.pop(context);
+        },
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,8 +115,11 @@ class _DashboardState extends State<Dashboard> {
                   childAspectRatio: 0.9,
                   children: categories
                       .map(
-                        (category) =>
-                            _buildCuisineCard(category.name, category.imageUrl),
+                        (category) => _buildCuisineCard(
+                          category.id,
+                          category.name,
+                          category.imageUrl,
+                        ),
                       )
                       .toList(),
                 );
@@ -145,8 +131,22 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildCuisineCard(String title, String imagePath) {
-    return Container(
+  Widget _buildCuisineCard(String categoryId, String title, String imagePath) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodListPage(
+              categoryId: categoryId,
+              categoryName: title,
+              imagePath: imagePath,
+              authToken: widget.token,
+            ),
+          ),
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -203,6 +203,7 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
+    )
     );
   }
 }

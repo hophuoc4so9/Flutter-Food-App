@@ -1,5 +1,4 @@
-import connectDB from '../config/db.js';
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const foodInOrderSchema = new Schema({
@@ -85,8 +84,6 @@ userSchema.methods.comparePassword = async function (
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-const connection = connectDB();
-
-const UserModel = connection.model('User', userSchema);
+const UserModel = mongoose.model('User', userSchema);
 
 export default UserModel;

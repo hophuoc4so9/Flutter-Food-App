@@ -5,16 +5,16 @@ interface IPayment extends Document {
   orderId: string;
   amount: number;
   currency: string;
-  paymentMethod: string;
+  paymentMethod?: string;
   transactionNo?: string;
   vnpayCode?: string;
   bankCode?: string;
   cardType?: string;
   status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
   paymentUrl?: string;
-  description: string;
+  description?: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt?: Date;
   completedAt?: Date;
 }
 

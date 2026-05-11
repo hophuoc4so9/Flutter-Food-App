@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/payment_service.dart';
 import '../models/payment.dart';
+import '../widgets/custom_appbar.dart';
 
 class PaymentResultScreen extends StatefulWidget {
   final String orderId;
@@ -45,9 +46,8 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kết quả thanh toán'),
-        elevation: 0,
+      appBar: PaymentAppBar(
+        title: 'Kết quả thanh toán',
       ),
       body: FutureBuilder<Payment?>(
         future: _paymentFuture,

@@ -1,3 +1,4 @@
+import 'package:Flutter_Food_App/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'loginPage.dart';
 import 'services/auth_service.dart';
@@ -42,15 +43,11 @@ class _RegistrationState extends State<Registration> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F6),
-      appBar: AppBar(
+      appBar: CustomAppBar(
+        title: 'Sign Up',
         backgroundColor: Colors.transparent,
+        textColor: Colors.blue,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.blue),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
       body: SafeArea(
         child: Center(

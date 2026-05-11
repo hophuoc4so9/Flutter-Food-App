@@ -1,5 +1,4 @@
-import connectDB from '../config/db.js';
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const foodSchema = new Schema({
     name: {
@@ -32,7 +31,6 @@ const categorySchema = new Schema({
     },
 }, { timestamps: true });
 
-const connection = connectDB();
-const CategoryModel = connection.model('Category', categorySchema);
+const CategoryModel = mongoose.model('Category', categorySchema);
 
 export default CategoryModel;

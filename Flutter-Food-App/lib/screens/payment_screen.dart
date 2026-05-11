@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/payment_service.dart';
+import '../widgets/custom_appbar.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String baseUrl;
@@ -112,9 +113,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thanh toán VNPAY'),
-        elevation: 0,
+      appBar: PaymentAppBar(
+        title: 'Thanh toán VNPAY',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

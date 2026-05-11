@@ -188,14 +188,50 @@ export class UserController {
 
     static async addOrder(req: any, res: any, next: any): Promise<any> {
         try {
-            const { userId, food, total } = req.body;
+            // Get userId từ token (authenticated)
+            const userId = req.user?._id || req.user?.id;
+            
+            // Support cả format cũ (food, total) và format mới (items, totalAmount)
+            const { food, total, items, totalAmount, description } = req.body;
 
-            if (!userId || !food || total === undefined) {
-                return res.status(400).json({ status: false, message: "userId, food, and total are required" });
+            if (!userId) {
+                return res.status(401).json({ status: false, message: "User not authenticated" });
             }
 
-            const updatedUser = await UserService.addOrder(userId, food, total);
-            res.json({ status: true, success: updatedUser });
+            // Xử lý format mới (items)
+            if (items && totalAmount !== undefined) {
+                // Format mới từ Flutter cart
+                if (!Array.isArray(items) || items.length === 0) {
+                    return res.status(400).json({ status: false, message: "Items are required and must be non-empty" });
+                }
+
+                // Transform items format sang food format để lưu vào User
+                const foodArray = items.map((item: any) => ({
+                    food_id: item.id,
+                    quantity: item.quantity,
+                }));
+
+                const updatedUser = await UserService.addOrder(userId, foodArray, totalAmount);
+                return res.json({ 
+                    status: true, 
+                    success: {
+                        orderId: `${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
+                        totalAmount,
+                        itemCount: items.length,
+                    }
+                });
+            }
+
+            // Format cũ (food, total) - backward compatibility
+            if (food && total !== undefined) {
+                const updatedUser = await UserService.addOrder(userId, food, total);
+                return res.json({ status: true, success: updatedUser });
+            }
+
+            return res.status(400).json({ 
+                status: false, 
+                message: "Either (items + totalAmount) or (food + total) are required" 
+            });
         } catch (err) {
             console.error('Add order error:', err);
             res.status(400).json({ status: false, message: err instanceof Error ? err.message : "Error adding order" });

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controller/user.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const UserRouter = Router();
 
@@ -411,6 +412,6 @@ UserRouter.post("/resend-otp", UserController.resendOTP);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-UserRouter.post("/addOrder", UserController.addOrder);
+UserRouter.post("/addOrder", authenticateToken , UserController.addOrder);
 
 export default UserRouter;

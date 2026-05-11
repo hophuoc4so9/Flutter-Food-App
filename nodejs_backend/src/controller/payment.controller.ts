@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Payment } from '../models/payment.model.js';
-import { VNPAYService } from '../services/vnpay.service.js';
 import {
   verifyVNPAYChecksum,
   parseAmount,
@@ -15,7 +14,7 @@ export class PaymentController {
    *     tags:
    *       - Payments
    *     summary: Create a new payment request
-   *     description: Initiate a payment transaction with VNPAY
+   *     description: Create and immediately mark payment as successful
    *     security:
    *       - bearerAuth: []
    *     requestBody:
@@ -36,15 +35,15 @@ export class PaymentController {
    *                 description: Payment description/order details
    *     responses:
    *       200:
-   *         description: Payment request created successfully
+   *         description: Payment created and marked as successful
    *       400:
    *         description: Invalid request data
    */
   static async createPayment(req: Request, res: Response) {
     try {
       const { amount, description } = req.body;
-      const userId = (req as any).user?.id;
-
+      const userId = (req as any).user?._id || (req as any).user?.id;
+   
       if (!userId) {
         return res.status(401).json({
           status: false,
@@ -66,41 +65,26 @@ export class PaymentController {
         });
       }
 
-      // Create payment record in database
+      // Create payment record in database with SUCCESS status
       const orderId = generateOrderId();
       const payment = new Payment({
         userId,
         orderId,
         amount,
         description,
-        status: 'PENDING',
+        status: 'SUCCESS',
+        completedAt: new Date(),
       });
 
-      await payment.save();
-
-      // Generate VNPAY payment request
-      const ipAddr =
-        (req.headers['x-forwarded-for'] as string) ||
-        (req.connection?.remoteAddress as string) ||
-        '127.0.0.1';
-
-      const paymentResponse = VNPAYService.createPayment({
-        userId,
-        amount,
-        description,
-        ipAddr: ipAddr.split(',')[0],
-      });
-
-      // Update payment with VNPAY payment URL
-      payment.paymentUrl = paymentResponse.paymentUrl;
       await payment.save();
 
       return res.status(200).json({
         status: true,
         success: {
-          orderId: paymentResponse.orderId,
-          paymentUrl: paymentResponse.paymentUrl,
-          amount: paymentResponse.amount,
+          orderId,
+          amount,
+          status: 'SUCCESS',
+          completedAt: payment.completedAt,
         },
       });
     } catch (error) {

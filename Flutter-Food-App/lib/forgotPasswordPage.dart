@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/auth_service.dart';
 import 'loginPage.dart';
+import 'widgets/custom_appbar.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   @override
@@ -118,18 +119,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Reset Password'),
+      appBar: CustomAppBar(
+        title: 'Reset Password',
         backgroundColor: Colors.deepOrange,
+        textColor: Colors.white,
         elevation: 0,
-        leading: _currentStep < 3
-            ? IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: _currentStep == 0
-                    ? () => Navigator.pop(context)
-                    : goBack,
-              )
-            : null,
+        onBackPressed: _currentStep == 0
+            ? () => Navigator.pop(context)
+            : (_currentStep < 3 ? goBack : null),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),

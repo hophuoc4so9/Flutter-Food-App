@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'models/cart_item.dart';
+import 'services/cart_service.dart';
+import 'widgets/custom_appbar.dart';
 
 class FoodDetailPage extends StatefulWidget {
   final Map<String, dynamic> foodItem;
@@ -11,16 +15,26 @@ class FoodDetailPage extends StatefulWidget {
 
 class _FoodDetailPageState extends State<FoodDetailPage> {
   int quantity = 1;
+  late CartService _cartService;
+  bool _isAddingToCart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCartService();
+  }
+
+  void _initializeCartService() async {
+    final prefs = await SharedPreferences.getInstance();
+    _cartService = CartService(prefs: prefs);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(widget.foodItem["name"]),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+      appBar: DetailAppBar(
+        title: widget.foodItem["name"],
       ),
       extendBodyBehindAppBar: true,
       body: SingleChildScrollView(
@@ -134,26 +148,32 @@ class _FoodDetailPageState extends State<FoodDetailPage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Đã thêm $quantity ${widget.foodItem["name"]} vào giỏ đồ!')),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onPressed: _isAddingToCart ? null : _addToCart,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD32F2F),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                      child: Text(
-                        "Thêm vào giỏ ($quantity)",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isAddingToCart
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              "Thêm vào giỏ ($quantity)",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -163,5 +183,55 @@ class _FoodDetailPageState extends State<FoodDetailPage> {
         ),
       ),
     );
+  }
+
+  void _addToCart() async {
+    setState(() => _isAddingToCart = true);
+    
+    try {
+      final cartItem = CartItem(
+        id: widget.foodItem["id"] ?? widget.foodItem["name"],
+        name: widget.foodItem["name"],
+        imageUrl: widget.foodItem["image"],
+        price: _parsePrice(widget.foodItem["price"]),
+        description: widget.foodItem["description"] ?? '',
+        quantity: quantity,
+      );
+
+      await _cartService.addToCart(cartItem);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã thêm $quantity ${widget.foodItem["name"]} vào giỏ đồ!'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isAddingToCart = false);
+      }
+    }
+  }
+
+  double _parsePrice(dynamic price) {
+    if (price is double) return price;
+    if (price is int) return price.toDouble();
+    if (price is String) {
+      return double.tryParse(price.replaceAll('\$', '')) ?? 0.0;
+    }
+    return 0.0;
   }
 }

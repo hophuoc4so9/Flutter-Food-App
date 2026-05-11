@@ -4,7 +4,6 @@ import 'registration.dart';
 import 'forgotPasswordPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/auth_service.dart';
-import 'config.dart';
 
 class SignInPage extends StatefulWidget {
   @override
