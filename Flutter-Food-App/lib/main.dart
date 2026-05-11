@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.black,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: (token != null && JwtDecoder.isExpired(token) == false )?Dashboard(token: token):SignInPage()
-    );
+      //home: (token != null && JwtDecoder.isExpired(token) == false )?Dashboard(token: token):SignInPage()
+      home: Dashboard(token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ0ZXN0X3VzZXJfaWQiLCJleHAiOjE4OTM0NTYwMDB9.c2lnbmF0dXJl")    );
   }
 }

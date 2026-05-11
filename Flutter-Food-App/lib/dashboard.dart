@@ -1,295 +1,141 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:velocity_x/velocity_x.dart';
-import 'package:http/http.dart' as http;
-import 'config.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 
 class Dashboard extends StatefulWidget {
   final token;
-  const Dashboard({@required this.token,Key? key}) : super(key: key);
+  const Dashboard({@required this.token, Key? key}) : super(key: key);
 
   @override
   State<Dashboard> createState() => _DashboardState();
 }
 
 class _DashboardState extends State<Dashboard> {
-
-  late String userId;
-  TextEditingController _todoTitle = TextEditingController();
-  TextEditingController _todoDesc = TextEditingController();
-  List? items;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    Map<String,dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
-
-    userId = jwtDecodedToken['_id'];
-    getTodoList(userId);
-  }
-
-  void addTodo() async{
-    if(_todoTitle.text.isNotEmpty && _todoDesc.text.isNotEmpty){
-
-      var regBody = {
-        "userId":userId,
-        "title":_todoTitle.text,
-        "description":_todoDesc.text
-      };
-
-      var response = await http.post(Uri.parse(addtodo),
-          headers: {
-            "Content-Type":"application/json",
-            "Authorization":"Bearer ${widget.token}"
-          },
-          body: jsonEncode(regBody)
-      );
-
-      var jsonResponse = jsonDecode(response.body);
-
-      print(jsonResponse['status']);
-
-      if(jsonResponse['status']){
-        _todoDesc.clear();
-        _todoTitle.clear();
-        Navigator.pop(context);
-        getTodoList(userId);
-      }else{
-        print("SomeThing Went Wrong");
-      }
-    }
-  }
-
-  void getTodoList(userId) async {
-    var response = await http.get(Uri.parse(getToDoList),
-        headers: {
-          "Content-Type":"application/json",
-          "Authorization":"Bearer ${widget.token}"
-        }
-    );
-
-    var jsonResponse = jsonDecode(response.body);
-    items = jsonResponse['success'];
-
-    setState(() {
-
-    });
-  }
-
-  void deleteItem(id) async{
-    var regBody = {
-      "toDoId":id
-    };
-
-    var response = await http.post(Uri.parse(deleteTodo),
-        headers: {
-          "Content-Type":"application/json",
-          "Authorization":"Bearer ${widget.token}"
-        },
-        body: jsonEncode(regBody)
-    );
-
-    var jsonResponse = jsonDecode(response.body);
-    if(jsonResponse['status']){
-      getTodoList(userId);
-    }
-
-  }
-
-  void updateItem(id, String title, String description) async {
-    var regBody = {
-      "toDoId": id,
-      "title": title,
-      "description": description
-    };
-
-    var response = await http.post(Uri.parse(updateTodo),
-        headers: {
-          "Content-Type":"application/json",
-          "Authorization":"Bearer ${widget.token}"
-        },
-        body: jsonEncode(regBody)
-    );
-
-    var jsonResponse = jsonDecode(response.body);
-    if(jsonResponse['status']){
-      getTodoList(userId);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlueAccent,
-       body: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-           Container(
-             padding: EdgeInsets.only(top: 60.0,left: 30.0,right: 30.0,bottom: 30.0),
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 CircleAvatar(child: Icon(Icons.list,size: 30.0,),backgroundColor: Colors.white,radius: 30.0,),
-                 SizedBox(height: 10.0),
-                 Text('ToDo with NodeJS + Mongodb',style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.w700),),
-                 SizedBox(height: 8.0),
-                 Text('5 Task',style: TextStyle(fontSize: 20),),
-
-               ],
-             ),
-           ),
-           Expanded(
-             child: Container(
-               decoration: BoxDecoration(
-                   color: Colors.white,
-                   borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20))
-               ),
-               child: Padding(
-                 padding: const EdgeInsets.all(8.0),
-                 child: items == null ? null : ListView.builder(
-                     itemCount: items!.length,
-                      itemBuilder: (context,int index){
-                        return Slidable(
-                          key: ValueKey(items![index]['_id']),
-                          startActionPane: ActionPane(
-                            motion: const ScrollMotion(),
-                            children: [
-                              SlidableAction(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                icon: Icons.edit,
-                                label: 'Edit',
-                                onPressed: (BuildContext context) {
-                                  _displayEditInputDialog(context, items![index]);
-                                },
-                              ),
-                            ],
-                          ),
-                          endActionPane: ActionPane(
-                            motion: const ScrollMotion(),
-                            dismissible: DismissiblePane(onDismissed: () {
-                              deleteItem('${items![index]['_id']}');
-                            }),
-                            children: [
-                              SlidableAction(
-                                backgroundColor: Color(0xFFFE4A49),
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: 'Delete',
-                                onPressed: (BuildContext context) {
-                                  print('${items![index]['_id']}');
-                                  deleteItem('${items![index]['_id']}');
-                                },
-                              ),
-                            ],
-                          ),
-                          child: Card(
-                            borderOnForeground: false,
-                            child: ListTile(
-                              leading: Icon(Icons.task),
-                              title: Text('${items![index]['title']}'),
-                              subtitle: Text('${items![index]['description']}'),
-                              trailing: Icon(Icons.arrow_back),
-                            ),
-                          ),
-                        );
-                      }
-                 ),
-               ),
-             ),
-           )
-         ],
-       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>_displayTextInputDialog(context) ,
-        child: Icon(Icons.add),
-        tooltip: 'Add-ToDo',
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        leading: Icon(Icons.menu, color: Colors.black),
+        title: Text(
+          "Restaurant App",
+          style: TextStyle(
+            color: Color(0xFFD32F2F),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0, top: 4.0),
+                child: Icon(Icons.shopping_cart_outlined, color: Colors.black, size: 28),
+              ),
+              Positioned(
+                top: 8,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    "3",
+                    style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(width: 8),
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          SizedBox(width: 8),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Cuisine",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD32F2F),
+              ),
+            ),
+          ),
+          Divider(color: Colors.grey.shade300, height: 1),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              padding: EdgeInsets.all(16),
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.9,
+              children: [
+                _buildCuisineCard("Chinese", "assets/chinese_food.jpg"),
+                _buildCuisineCard("South Indian", "assets/south_indian.jpg"),
+                _buildCuisineCard("Beverages", "assets/beverage.jpg"),
+                _buildCuisineCard("North India", "assets/indian-big-thali-food_1059430-62887.jpg"),
+                _buildCuisineCard("Korean", "assets/korea_food.jpg"),
+                _buildCuisineCard("Vietnamese", "assets/popular-vietnamese-foods.jpg"),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Add To-Do'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _todoTitle,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Title",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)))),
-                ).p4().px8(),
-                TextField(
-                  controller: _todoDesc,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Description",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)))),
-                ).p4().px8(),
-                ElevatedButton(onPressed: (){
-                  addTodo();
-                  }, child: Text("Add"))
-              ],
-            )
-          );
-        });
-  }
-
-  Future<void> _displayEditInputDialog(BuildContext context, Map item) async {
-    TextEditingController _editTodoTitle = TextEditingController(text: item['title']);
-    TextEditingController _editTodoDesc = TextEditingController(text: item['description']);
-
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Edit To-Do'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _editTodoTitle,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Title",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)))),
-                ).p4().px8(),
-                TextField(
-                  controller: _editTodoDesc,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Description",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)))),
-                ).p4().px8(),
-                ElevatedButton(onPressed: (){
-                  if (_editTodoTitle.text.isNotEmpty && _editTodoDesc.text.isNotEmpty) {
-                    updateItem(item['_id'], _editTodoTitle.text, _editTodoDesc.text);
-                    Navigator.pop(context);
-                  }
-                }, child: Text("Update"))
-              ],
-            )
-          );
-        });
+  Widget _buildCuisineCard(String title, String imagePath) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Color(0xFFD32F2F),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
