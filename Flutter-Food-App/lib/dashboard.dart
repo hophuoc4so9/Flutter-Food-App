@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'food_list_page.dart';
 
 class Dashboard extends StatefulWidget {
   final token;
@@ -83,12 +84,12 @@ class _DashboardState extends State<Dashboard> {
               mainAxisSpacing: 16,
               childAspectRatio: 0.9,
               children: [
-                _buildCuisineCard("Chinese", "assets/chinese_food.jpg"),
-                _buildCuisineCard("South Indian", "assets/south_indian.jpg"),
-                _buildCuisineCard("Beverages", "assets/beverage.jpg"),
-                _buildCuisineCard("North India", "assets/indian-big-thali-food_1059430-62887.jpg"),
-                _buildCuisineCard("Korean", "assets/korea_food.jpg"),
-                _buildCuisineCard("Vietnamese", "assets/popular-vietnamese-foods.jpg"),
+                _buildCuisineCard(context, "Chinese", "assets/chinese_food.jpg"),
+                _buildCuisineCard(context, "South Indian", "assets/south_indian.jpg"),
+                _buildCuisineCard(context, "Beverages", "assets/beverage.jpg"),
+                _buildCuisineCard(context, "North India", "assets/indian-big-thali-food_1059430-62887.jpg"),
+                _buildCuisineCard(context, "Korean", "assets/korea_food.jpg"),
+                _buildCuisineCard(context, "Vietnamese", "assets/popular-vietnamese-foods.jpg"),
               ],
             ),
           ),
@@ -97,12 +98,21 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildCuisineCard(String title, String imagePath) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
+  Widget _buildCuisineCard(BuildContext context, String title, String imagePath) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodListPage(categoryName: title, imagePath: imagePath),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 2,
@@ -136,6 +146,8 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
+    ),
     );
   }
 }
+
