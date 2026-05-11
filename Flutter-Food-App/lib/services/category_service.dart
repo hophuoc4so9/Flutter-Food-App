@@ -1,37 +1,40 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-class CategoryService {
-  /// Fetch all categories
-  static Future<Map<String, dynamic>> fetchCategories() async {
-    try {
-      final response = await http.get(
-        Uri.parse('http://localhost:3000/api/category/getCategory'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
+import '../config.dart' as app_config;
+import '../models/category.dart';
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return {
-          'status': data['status'] ?? false,
-          'categories': data['success'] ?? [],
-          'message': data['message'],
-        };
-      } else {
-        return {
-          'status': false,
-          'categories': [],
-          'message': 'Error: ${response.statusCode}',
-        };
-      }
-    } catch (e) {
-      return {
-        'status': false,
-        'categories': [],
-        'message': 'Error: ${e.toString()}',
-      };
+class CategoryService {
+  final String? authToken;
+
+  CategoryService({this.authToken});
+
+  Future<List<Category>> getCategories() async {
+    final response = await http.get(
+      Uri.parse(app_config.getCategories),
+      headers: {
+        'Content-Type': 'application/json',
+        if (authToken != null) 'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load categories: ${response.statusCode}');
     }
+
+    final decoded = jsonDecode(response.body);
+    final dynamic categoryList = decoded is List
+        ? decoded
+        : decoded['success'] ?? decoded['data'] ?? [];
+
+    if (categoryList is! List) {
+      throw Exception('Invalid category response format');
+    }
+
+    return categoryList
+        .whereType<Map<String, dynamic>>()
+        .map(Category.fromJson)
+        .toList();
   }
 }
