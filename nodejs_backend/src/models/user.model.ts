@@ -2,13 +2,20 @@ import connectDB from '../config/db.js';
 import { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const orderSchema = new Schema({
+const foodInOrderSchema = new Schema({
     food_id: {
         type: String,
         required: true,
     },
-    quanity: {
+    quantity: {
         type: Number,
+        required: true,
+    },
+}, { _id: false });
+
+const orderSchema = new Schema({
+    food: {
+        type: [foodInOrderSchema],
         required: true,
     },
     total: {

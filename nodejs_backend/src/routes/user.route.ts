@@ -349,4 +349,68 @@ UserRouter.post("/verify-otp", UserController.verifyOTP);
  */
 UserRouter.post("/resend-otp", UserController.resendOTP);
 
+/**
+ * @swagger
+ * /users/addOrder:
+ *   post:
+ *     tags:
+ *       - Orders
+ *     summary: Add order for user
+ *     description: Create a new order for a user with list of food items
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - food
+ *               - total
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: User ID
+ *                 example: "507f1f77bcf86cd799439011"
+ *               food:
+ *                 type: array
+ *                 description: Array of food items in the order
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - food_id
+ *                     - quantity
+ *                   properties:
+ *                     food_id:
+ *                       type: string
+ *                       example: "507f1f77bcf86cd799439012"
+ *                     quantity:
+ *                       type: number
+ *                       example: 2
+ *               total:
+ *                 type: number
+ *                 description: Total price of the order
+ *                 example: 29.99
+ *     responses:
+ *       200:
+ *         description: Order added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 success:
+ *                   type: object
+ *       400:
+ *         description: Invalid input or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+UserRouter.post("/addOrder", UserController.addOrder);
+
 export default UserRouter;

@@ -185,4 +185,20 @@ export class UserController {
             res.status(500).json({ status: false, message: err instanceof Error ? err.message : "Error resending OTP" });
         }
     }
+
+    static async addOrder(req: any, res: any, next: any): Promise<any> {
+        try {
+            const { userId, food, total } = req.body;
+
+            if (!userId || !food || total === undefined) {
+                return res.status(400).json({ status: false, message: "userId, food, and total are required" });
+            }
+
+            const updatedUser = await UserService.addOrder(userId, food, total);
+            res.json({ status: true, success: updatedUser });
+        } catch (err) {
+            console.error('Add order error:', err);
+            res.status(400).json({ status: false, message: err instanceof Error ? err.message : "Error adding order" });
+        }
+    }
 }

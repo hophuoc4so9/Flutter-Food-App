@@ -153,6 +153,24 @@ class UserService {
             throw error;
         }
     }
+
+    static async addOrder(userId: string, food: Array<{ food_id: string; quantity: number }>, total: number): Promise<any> {
+        try {
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            const newOrder = {
+                food,
+                total
+            };
+            user.orders.push(newOrder);
+            await user.save();
+            return user;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default UserService;
